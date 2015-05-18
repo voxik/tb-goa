@@ -1,0 +1,2 @@
+content     tb-goa    chrome/content/
+overlay chrome://messenger/content/messenger.xul chrome://tb-goa/content/myhelloworld.xul
