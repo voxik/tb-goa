@@ -1,8 +1,24 @@
 <?xml version="1.0"?>
-<overlay id="sample" 
-xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
- <script type="application/javascript" src="chrome://tb-goa/content/overlay.js"/><!-- A reference to your JavaScript file -->
- <statusbar id="status-bar">
-  <statusbarpanel id="my-panel" label="Date"/>
- </statusbar>
+<overlay id="sample"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/javascript" src="chrome://tb-goa/content/overlay.js"/>
+
+  <rows id="acctCentralRows">
+    <row id="goa-header"
+         class="acctCentralTitleRow"
+         insertbefore="EmailHeader">
+      <hbox class="acctCentralRowTitleBox">
+        <description>Goa</description>
+      </hbox>
+    </row>
+    <spacer id="goa-separator"
+            flex="1"
+            insertbefore="EmailHeader"/>
+    <row id="goa-content-row"
+         insertbefore="EmailHeader">
+      <div id="goa-content"/>
+    </row>
+  </rows>
+
 </overlay>

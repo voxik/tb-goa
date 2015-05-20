@@ -13,7 +13,6 @@ window.setInterval(
     }, 60000); //update date every minute
 
 function startup() {
-    var myPanel = document.getElementById("my-panel");
 
     var output = '';
     var p = subprocess.call({
@@ -32,5 +31,6 @@ function startup() {
             // this will block the main thread,
             // only do if you can wait that long
 
-    myPanel.label = "Output: " + output;
+    var myPanel = document.getElementById("goa-content");
+    myPanel.innerHTML = "Output: " + output;
 }
