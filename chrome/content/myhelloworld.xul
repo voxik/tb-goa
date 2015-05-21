@@ -17,7 +17,7 @@
             insertbefore="EmailHeader"/>
     <row id="goa-content-row"
          insertbefore="EmailHeader">
-      <div id="goa-content"/>
+      <div id="goa-content" style="white-space: pre;"/>
     </row>
   </rows>
 
