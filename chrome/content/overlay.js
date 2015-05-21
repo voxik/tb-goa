@@ -15,6 +15,7 @@ window.setInterval(
 function startup() {
     var content_node = document.getElementById("goa-content");
 
+    // Enumerate accounts.
     var accounts_xml = '';
     subprocess.call({
         command: '/usr/bin/dbus-send',
@@ -30,6 +31,7 @@ function startup() {
 
 
     var parser = new DOMParser();
+
     var accounts_dom = parser.parseFromString(accounts_xml, "text/xml");
     var account_nodes = accounts_dom.documentElement.childNodes;
 
@@ -40,26 +42,56 @@ function startup() {
         }
     }
 
+    // Enumerate properties of each account.
+    var calendar_accounts = {};
     for(var i = 0; i < accounts.length; i++) {
-        content_node.appendChild(
-            document.createTextNode(accounts[i] + '\n')
-        );
+        var account_xml = '';
+        subprocess.call({
+            command: '/usr/bin/dbus-send',
+            arguments: [
+                "--dest=org.gnome.OnlineAccounts", "--print-reply=literal",
+                "/org/gnome/OnlineAccounts/Accounts/" + accounts[i], "org.freedesktop.DBus.Introspectable.Introspect"
+            ],
+            done: function(result) {
+                account_xml = result.stdout;
+            },
+            mergeStderr: false
+        }).wait();
+
+        var account_dom = parser.parseFromString(account_xml, "text/xml");
+        var interface_nodes = account_dom.getElementsByTagName("interface");
+
+        for(var n = 0; n < interface_nodes.length; n++) {
+            var name = interface_nodes[n].getAttribute("name");
+            if (name == "org.gnome.OnlineAccounts.Calendar") {
+                calendar_accounts[accounts[i]] = account_dom;
+                break;
+            }
+        }
     }
 
-    var output = '';
-    subprocess.call({
-        command: '/usr/bin/dbus-send',
-        arguments: [
-            "--dest=org.gnome.OnlineAccounts", "--print-reply",
-            "/org/gnome/OnlineAccounts/Accounts/account_1431601757_1", "org.gnome.OnlineAccounts.OAuth2Based.GetAccessToken"
-        ],
-        done: function(result) {
-            output = result.stdout;
-        },
-        mergeStderr: false
-    }).wait();
+    for(var ca in calendar_accounts) {
+       var access_token_string = '';
+       subprocess.call({
+           command: '/usr/bin/dbus-send',
+           arguments: [
+               "--dest=org.gnome.OnlineAccounts", "--print-reply",
+               "/org/gnome/OnlineAccounts/Accounts/" + ca, "org.gnome.OnlineAccounts.OAuth2Based.GetAccessToken"
+           ],
+           done: function(result) {
+               access_token_string = result.stdout;
+           },
+           mergeStderr: false,
+       }).wait();
 
-    content_node.appendChild(
-        document.createTextNode(output)
-    );
+       var access_token_lines = access_token_string.split('\n');
+       var access_token = access_token_lines[1].trim().split('"')[1];
+       var access_token_expires_in = access_token_lines[2].trim().split(' ')[1];
+       content_node.appendChild(
+           document.createTextNode(access_token + '\n')
+       );
+       content_node.appendChild(
+           document.createTextNode(access_token_expires_in + '\n')
+       );
+    }
 }
